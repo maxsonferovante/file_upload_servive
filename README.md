@@ -29,6 +29,7 @@ Recebe as informações do arquivo e retorna uma URL pré-assinada para upload n
 
 - `upload_url`: URL pré-assinada para upload direto no S3.
 - `file_id`: ID único para acompanhar o status do upload.
+- `file_name`
 
 ---
 
