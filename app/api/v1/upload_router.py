@@ -1,16 +1,20 @@
 from fastapi import APIRouter
+from app.core.config import get_logger
+
+logger = get_logger(__name__)
+
 from .schemas import RequestUpload, ResponseStatus, ResponseUpload
+from app.compose.upload_compose import upload_compose
+
 
 upload_router = APIRouter(prefix="/uploads")
 
 
 @upload_router.post("/upload")
-async def upload_file(request: RequestUpload, response: ResponseUpload) -> ResponseUpload:
-    return ResponseUpload(
-        upload_url="https://www.example.com/upload",
-        file_id="123456",
-        file_name=request.file,
-    )
+async def upload_file(request: RequestUpload) -> ResponseUpload:
+    upload_file = upload_compose()    
+    response = upload_file.execute(request)    
+    return response
 
 
 
