@@ -22,7 +22,6 @@ class S3Service:
                 ExpiresIn=expiration                
             )
             logger.info(f'Presigned URL generated for object {object_name}')
-            logger.debug(f'Presigned URL: {response}')
             return response
         except Exception as e:
             logger.error(f'Error generating presigned URL for object {object_name}')
