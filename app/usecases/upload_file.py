@@ -16,7 +16,7 @@ class UploadFile:
         result = self.s3_service.generate_presigned_url(object_name=data.file)
         
         return ResponseUpload(
-            upload_url=result,
+            fields=result,
             file_id=str(uuid.uuid4()),
             file_name=data.file
         )

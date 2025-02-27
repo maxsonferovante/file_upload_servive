@@ -17,7 +17,7 @@ class RequestUpload(BaseModel):
 
 
 class ResponseUpload(BaseModel):
-    upload_url: str
+    fields: dict
     file_id: str
     file_name: str
 
