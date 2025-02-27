@@ -11,14 +11,16 @@ class S3Service:
         self.bucket_name = config.BUCKET_NAME
 
     # gerar um link pre-assinado
-    def generate_presigned_url(self, object_name: str, expiration: int = 18000000) -> str:
+    def generate_presigned_url(self, object_name: str, expiration: int = 3600) -> str:
         try:
             logger.info(f'Generating presigned URL for object {object_name}')
             response = self.aws.generate_presigned_post(
                 Bucket=self.bucket_name,
                 Key=object_name,
-                Fields=None,
-                Conditions=None,
+                Fields={"Content-Type": "application/octet-stream"},
+                Conditions=[
+                    {"Content-Type": "application/octet-stream"}
+                ],
                 ExpiresIn=expiration                
             )
             logger.info(f'Presigned URL generated for object {object_name}')
