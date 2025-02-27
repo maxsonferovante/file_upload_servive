@@ -1,7 +1,8 @@
 import os
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse
-from app.core.config import get_logger
+from app.core.config import get_logger, config
+
 
 logger = get_logger(__name__)
 
@@ -28,6 +29,13 @@ async def confirm_upload(file_id: str) -> ResponseStatus:
         dest_path="https://www.example.com/upload",
     )
     
+@upload_router.post("/cancel-upload")
+async def cancel_upload(file_id: str) -> ResponseStatus:
+    return ResponseStatus(
+        file_id=file_id,
+        key_path="123456",
+        dest_path="https://www.example.com/upload",
+    )
 
 @upload_router.get("/forms", response_class=HTMLResponse)
 async def get_forms():
@@ -37,4 +45,4 @@ async def get_forms():
     forms_file = os.path.join(os.getcwd(), "static", "forms.html")
     with open(forms_file, "r", encoding="utf-8") as f:
         html_content = f.read()
-    return HTMLResponse(content=html_content)
+    return HTMLResponse(content=html_content, headers={"Content-Type": "text/html", 's3-url': config.URL_S3})
