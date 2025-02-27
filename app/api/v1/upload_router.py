@@ -1,4 +1,6 @@
+import os
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
 from app.core.config import get_logger
 
 logger = get_logger(__name__)
@@ -18,7 +20,7 @@ async def upload_file(request: RequestUpload) -> ResponseUpload:
 
 
 
-@upload_router.get("/confirm-upload")
+@upload_router.post("/confirm-upload")
 async def confirm_upload(file_id: str) -> ResponseStatus:
     return ResponseStatus(
         file_id=file_id,
@@ -26,3 +28,13 @@ async def confirm_upload(file_id: str) -> ResponseStatus:
         dest_path="https://www.example.com/upload",
     )
     
+
+@upload_router.get("/forms", response_class=HTMLResponse)
+async def get_forms():
+    """
+    Lê o arquivo forms.html da pasta static e retorna como resposta HTML.
+    """
+    forms_file = os.path.join(os.getcwd(), "static", "forms.html")
+    with open(forms_file, "r", encoding="utf-8") as f:
+        html_content = f.read()
+    return HTMLResponse(content=html_content)
