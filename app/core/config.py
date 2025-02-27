@@ -17,6 +17,7 @@ class Config(BaseSettings):
     KEY_SECRET: str
     REGION: str
     BUCKET_NAME: str    
+    URL_S3: str
 
     class Config:
         env_file = ".env"
