@@ -1,6 +1,6 @@
 from app.services.boto_aws import ServiceNameAWS, get_instance_aws
 from app.core.config import config, get_logger
-
+from typing import Dict
 logger = get_logger(__name__)
 
 class S3Service:
@@ -11,9 +11,8 @@ class S3Service:
         self.bucket_name = config.BUCKET_NAME
 
     # gerar um link pre-assinado
-    def generate_presigned_url(self, object_name: str, expiration: int = 3600) -> str:
+    def generate_presigned_url(self, object_name: str, expiration: int = 3600) -> Dict:
         try:
-            logger.info(f'Generating presigned URL for object {object_name}')
             response = self.aws.generate_presigned_post(
                 Bucket=self.bucket_name,
                 Key=object_name,

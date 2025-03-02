@@ -43,55 +43,46 @@
       Dropzone.autoDiscover = false;
 
       // Mapeia os arquivos adicionados para seus respectivos IDs gerados no backend
-      const list_files = {};
-
+      const list_files = [];
       // Instancia o Dropzone manualmente para o elemento com id "myDropzone"
       const myDropzone = new Dropzone("#myDropzone", {
         // A URL será sobrescrita dinamicamente para cada arquivo
 
         url: "https://maal-upload-dev.s3.amazonaws.com/",
-        acceptedFiles: ".zip",
+        acceptedFiles: ".zip ",
         autoProcessQueue: false,
         uploadMultiple: true,
         createImageThumbnails: true,
-        parallelUploads: 5,
+        parallelUploads: 1000,
         maxFilesize: 100000, // MB
-        maxFiles: 5,
-        sending: async (file, xhr, formData) => {
-          const response = await fetch("/api/v1/uploads/upload", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              file: file.name,
-              extension: file.name.split(".").pop(),
-              type: "sped",
-              length: file.size,
-            }),
-          });
+        maxFiles: 100,
+        sending: (file, xhr, formData) => {
+          // agora estaá em list_files
 
-          const data = await response.json();
-          list_files[file.name] = data.file_id;
-          myDropzone.options.url = data.fields["url"];
-          Object.entries(data.fields["fields"]).forEach(([key, value]) => {
-            formData.append(key, value);
-          });
-          formData.append("file", file);
+          const item = list_files[file.name];
+          if (item) {
+            Object.entries(item.fields["fields"]).forEach(([key, value]) => {
+              formData.append(key, value);
+            });
+            formData.append("file", file);
+            myDropzone.options.url = item.fields["url"];
+          }
         },
       });
       // Evento de sucesso do upload
       myDropzone.on("success", function (file, response) {
-        fetch(
-          `/api/v1/uploads/confirm-upload?file_id=${list_files[file.name]}`,
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-        delete list_files[file.name];
+        if (myDropzone.getUploadingFiles().length === 0) {
+          fetch(
+            `/api/v1/uploads/confirm-upload?file_id=${list_files[file.name]}`,
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+              },
+            }
+          );
+          delete list_files[file.name];
+        }
       });
 
       myDropzone.on("uploadprogress", function (file, progress, bytesSent) {
@@ -101,37 +92,63 @@
       });
 
       myDropzone.on("complete", function (file) {
+        delete list_files[file.name];
         myDropzone.removeAllFiles();
       });
 
       myDropzone.on("error", function (file, response) {
-        document.getElementById("progress").innerText =
-          "Erro ao enviar arquivo: " + response;
-        console.error({
-          file,
-          response,
-        });
+        if (myDropzone.getUploadingFiles().length === 0) {
+          document.getElementById("progress").innerText =
+            "Erro ao enviar arquivo: " + response + " - " + file.name;
 
-        fetch(
-          `/api/v1/uploads/cancel-upload?file_id=${list_files[file.name]}`,
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-        delete list_files[file.name];
+          console.error({
+            file,
+            response,
+          });
+
+          fetch(
+            `/api/v1/uploads/cancel-upload?file_id=${list_files[file.name]}`,
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+              },
+            }
+          );
+          delete list_files[file.name];
+        }
       });
       // Botão para disparar o envio dos arquivos
       document
         .getElementById("uploadButton")
-        .addEventListener("click", function () {
-          const files = myDropzone.getAcceptedFiles();
-          if (files.length === 0) {
+        .addEventListener("click", async function () {
+          const files_upload = myDropzone.getAcceptedFiles();
+          if (files_upload.length === 0) {
             alert("Nenhum arquivo adicionado");
             return;
           }
+          const response = await fetch("/api/v1/uploads/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              files: files_upload.map((file) => ({
+                name: file.name,
+                type: "sped",
+                size: file.size,
+                extension: file.name.split(".").pop(),
+              })),
+            }),
+          });
+          const data = await response.json();
+          data["list_urls"].forEach((item) => {
+            list_files[item.file_name] = {
+              name: item.file_name,
+              id: item.file_id,
+              fields: item.fields,
+            };
+          });
           myDropzone.processQueue();
         });
     </script>

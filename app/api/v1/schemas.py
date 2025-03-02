@@ -1,7 +1,7 @@
 # Definição dos modelos de request/response da API
 
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -9,17 +9,23 @@ class TypeFile(str,Enum):
     sped = 'sped'
 
 
-class RequestUpload(BaseModel):
-    file: str
-    extension: str
+class File(BaseModel):
+    name: str
     type: TypeFile = TypeFile.sped
-    length: int
+    size: int
+    extension: str
+
+class RequestUpload(BaseModel):
+    files: List[File]    
 
 
-class ResponseUpload(BaseModel):
+class URLPresigned(BaseModel):
     fields: dict
     file_id: str
     file_name: str
+
+class ResponseUpload(BaseModel):
+    list_urls: List[URLPresigned]  
 
 
 class Status(str, Enum):
