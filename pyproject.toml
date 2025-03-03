@@ -3,15 +3,10 @@ name = "file-upload-servive"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13.1"
+requires-python = ">=3.13"
 dependencies = [
-    "boto3>=1.37.2",
+    "boto3>=1.37.4",
     "dotenv>=0.9.9",
-    "fastapi[standard]>=0.115.8",
-    "pydantic-setting",
-]
-
-[dependency-groups]
-dev = [
-    "ruff>=0.9.7",
+    "fastapi[standard]>=0.115.11",
+    "pydantic-settings>=2.8.1",
 ]
